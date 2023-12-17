@@ -1,28 +1,29 @@
-import time
+from time import sleep
 import board
 import adafruit_dht
 
-dht_device = adafruit_dht.DHT22(board.D6)
+class Dht22:
+  def __init__(self) -> None:
+    self.dhtDevice = adafruit_dht.DHT22(board.D6)
 
-while True:
-    try:
-        # Print the values to the serial port
-        temperature_c = dht_device.temperature
-        temperature_f = temperature_c * (9 / 5) + 32
-        humidity = dht_device.humidity
-        print(
-            "Temp: {:.1f} F / {:.1f} C    Humidity: {}% ".format(
-                temperature_f, temperature_c, humidity
-            )
-        )
+  def read(self):
+      while True:
+          try:
+              dhtData = DhtData(self.dhtDevice.temperature, self.dhtDevice.humidity)
+              self.dhtDevice.exit()
+              return dhtData
 
-    except RuntimeError as error:
-        # Errors happen fairly often, DHT's are hard to read, just keep going
-        print(error.args[0])
-        time.sleep(2.0)
-        continue
-    except Exception as error:
-        dht_device.exit()
-        raise error
+          except RuntimeError as error:
+              print(error.args[0])
+              sleep(2.0)
+              continue
 
-    time.sleep(2.0)
+          except Exception as error:
+              self.dhtDevice.exit()
+              raise error
+
+class DhtData:
+   def __init__(self, temperatureC, humidity) -> None:
+      self.temperatureC = round(temperatureC, 1)
+      self.temperatureF = round(temperatureC * (9 / 5) + 32, 1)
+      self.humidity = round(humidity, 1)
